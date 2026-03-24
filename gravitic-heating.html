@@ -1,0 +1,1677 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Fire Beneath the Equations — Gravitic Interior Heating</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400;1,700&family=Source+Serif+4:ital,opsz,wght@0,8..60,300;0,8..60,400;1,8..60,300&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --void: #060608;
+    --deep: #0d0d12;
+    --stratum: #13131a;
+    --mantle: #1a1a24;
+    --crust: #22222e;
+    --ember: #c8622a;
+    --amber: #d4882f;
+    --gold: #c9a84c;
+    --pale-gold: #e8d5a3;
+    --iron: #8a7a6a;
+    --slate: #4a4a5a;
+    --text: #d8d0c4;
+    --text-dim: #7a7268;
+    --text-bright: #ede5d8;
+    --accent-line: rgba(200, 98, 42, 0.4);
+    --glow: rgba(200, 98, 42, 0.15);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--void);
+    color: var(--text);
+    font-family: 'Source Serif 4', Georgia, serif;
+    font-weight: 300;
+    line-height: 1.75;
+    font-size: 18px;
+    overflow-x: hidden;
+  }
+
+  /* ── NOISE OVERLAY ── */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 1000;
+    opacity: 0.6;
+  }
+
+  /* ── TYPOGRAPHY ── */
+  h1, h2, h3, h4 {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-weight: 700;
+    line-height: 1.2;
+    color: var(--text-bright);
+  }
+
+  .mono {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.78em;
+    letter-spacing: 0.08em;
+  }
+
+  /* ── NAVIGATION ── */
+  nav {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 100;
+    padding: 1.2rem 2.5rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: linear-gradient(to bottom, rgba(6,6,8,0.95), transparent);
+    backdrop-filter: blur(8px);
+  }
+
+  .nav-brand {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.72em;
+    letter-spacing: 0.15em;
+    color: var(--ember);
+    text-transform: uppercase;
+    text-decoration: none;
+  }
+
+  .nav-links {
+    display: flex;
+    gap: 2rem;
+    list-style: none;
+  }
+
+  .nav-links a {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.68em;
+    letter-spacing: 0.1em;
+    color: var(--text-dim);
+    text-decoration: none;
+    text-transform: uppercase;
+    transition: color 0.3s;
+  }
+
+  .nav-links a:hover { color: var(--amber); }
+
+  /* ── HERO ── */
+  .hero {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    padding: 0 6vw 8vh;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .hero-bg {
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(ellipse 80% 60% at 50% 120%, rgba(180, 60, 20, 0.18) 0%, transparent 60%),
+      radial-gradient(ellipse 40% 40% at 80% 20%, rgba(100, 60, 20, 0.08) 0%, transparent 50%),
+      radial-gradient(ellipse 60% 80% at 20% 80%, rgba(30, 20, 10, 0.4) 0%, transparent 60%);
+  }
+
+  /* Animated orbital rings */
+  .orbital-rings {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    pointer-events: none;
+  }
+
+  .ring {
+    position: absolute;
+    border-radius: 50%;
+    border: 1px solid rgba(200, 98, 42, 0.12);
+  }
+
+  .ring:nth-child(1) {
+    width: 280px; height: 280px;
+    border-color: rgba(200, 98, 42, 0.2);
+    animation: rotate 40s linear infinite;
+    top: 10%; right: 8%;
+  }
+
+  .ring:nth-child(2) {
+    width: 480px; height: 480px;
+    border-color: rgba(200, 98, 42, 0.1);
+    animation: rotate 70s linear infinite reverse;
+    top: -5%; right: -2%;
+  }
+
+  .ring:nth-child(3) {
+    width: 700px; height: 700px;
+    border-color: rgba(200, 98, 42, 0.06);
+    animation: rotate 110s linear infinite;
+    top: -20%; right: -15%;
+  }
+
+  .ring-dot {
+    position: absolute;
+    width: 5px; height: 5px;
+    background: var(--ember);
+    border-radius: 50%;
+    top: -2.5px; left: 50%;
+    transform: translateX(-50%);
+    box-shadow: 0 0 8px var(--ember);
+  }
+
+  @keyframes rotate {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+  }
+
+  .hero-eyebrow {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.72em;
+    letter-spacing: 0.2em;
+    color: var(--ember);
+    text-transform: uppercase;
+    margin-bottom: 1.5rem;
+    opacity: 0;
+    animation: fadeUp 1s 0.3s ease forwards;
+  }
+
+  .hero-title {
+    font-size: clamp(3rem, 7vw, 7.5rem);
+    font-weight: 900;
+    line-height: 1.0;
+    color: var(--text-bright);
+    max-width: 900px;
+    margin-bottom: 0.5rem;
+    opacity: 0;
+    animation: fadeUp 1s 0.5s ease forwards;
+  }
+
+  .hero-title em {
+    font-style: italic;
+    color: var(--amber);
+  }
+
+  .hero-subtitle {
+    font-size: clamp(1rem, 1.8vw, 1.3rem);
+    color: var(--iron);
+    max-width: 600px;
+    margin-top: 1.5rem;
+    margin-bottom: 3rem;
+    font-style: italic;
+    opacity: 0;
+    animation: fadeUp 1s 0.7s ease forwards;
+  }
+
+  .hero-meta {
+    display: flex;
+    gap: 3rem;
+    opacity: 0;
+    animation: fadeUp 1s 0.9s ease forwards;
+  }
+
+  .meta-item {
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+  }
+
+  .meta-label {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.62em;
+    letter-spacing: 0.15em;
+    color: var(--text-dim);
+    text-transform: uppercase;
+  }
+
+  .meta-value {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.8em;
+    color: var(--amber);
+  }
+
+  .hero-scroll {
+    position: absolute;
+    bottom: 2.5rem;
+    right: 6vw;
+    font-family: 'Space Mono', monospace;
+    font-size: 0.65em;
+    letter-spacing: 0.15em;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    writing-mode: vertical-rl;
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    opacity: 0;
+    animation: fadeIn 1s 1.5s ease forwards;
+  }
+
+  .scroll-line {
+    width: 1px;
+    height: 60px;
+    background: linear-gradient(to bottom, var(--ember), transparent);
+    animation: scrollPulse 2s ease-in-out infinite;
+  }
+
+  @keyframes scrollPulse {
+    0%, 100% { opacity: 0.4; transform: scaleY(1); }
+    50% { opacity: 1; transform: scaleY(1.2); }
+  }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(24px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+
+  /* ── SECTIONS ── */
+  section {
+    padding: 8rem 6vw;
+    position: relative;
+  }
+
+  .section-strata {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 3px;
+    height: 100%;
+  }
+
+  .section-number {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.65em;
+    letter-spacing: 0.2em;
+    color: var(--ember);
+    text-transform: uppercase;
+    margin-bottom: 1rem;
+    display: block;
+  }
+
+  .section-title {
+    font-size: clamp(2rem, 4vw, 3.5rem);
+    margin-bottom: 3rem;
+    max-width: 800px;
+  }
+
+  .section-title em {
+    font-style: italic;
+    color: var(--amber);
+  }
+
+  .prose {
+    max-width: 680px;
+    color: var(--text);
+    font-size: 1.05rem;
+  }
+
+  .prose p + p {
+    margin-top: 1.5rem;
+  }
+
+  .prose strong {
+    color: var(--pale-gold);
+    font-weight: 400;
+  }
+
+  /* ── DIVIDER ── */
+  .strata-divider {
+    width: 100%;
+    height: 1px;
+    background: linear-gradient(to right, transparent, var(--accent-line), transparent);
+    position: relative;
+    margin: 0;
+  }
+
+  /* ── PULL QUOTES ── */
+  .pull-quote {
+    border-left: 3px solid var(--ember);
+    padding: 1.5rem 0 1.5rem 2.5rem;
+    margin: 3rem 0;
+    max-width: 620px;
+  }
+
+  .pull-quote p {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.4rem;
+    font-style: italic;
+    line-height: 1.5;
+    color: var(--pale-gold);
+  }
+
+  /* ── DATA CARDS ── */
+  .data-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 1.5px;
+    margin: 3rem 0;
+    background: var(--accent-line);
+    max-width: 960px;
+  }
+
+  .data-card {
+    background: var(--stratum);
+    padding: 2rem;
+    position: relative;
+    overflow: hidden;
+    transition: background 0.3s;
+  }
+
+  .data-card:hover { background: var(--mantle); }
+
+  .data-card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, var(--glow), transparent);
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+
+  .data-card:hover::before { opacity: 1; }
+
+  .data-number {
+    font-family: 'Playfair Display', serif;
+    font-size: 2.8rem;
+    font-weight: 700;
+    color: var(--ember);
+    line-height: 1;
+    margin-bottom: 0.5rem;
+  }
+
+  .data-unit {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.7em;
+    color: var(--amber);
+    margin-left: 0.3rem;
+  }
+
+  .data-label {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.68em;
+    letter-spacing: 0.1em;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    margin-bottom: 0.8rem;
+  }
+
+  .data-desc {
+    font-size: 0.88rem;
+    color: var(--iron);
+    line-height: 1.6;
+  }
+
+  /* ── EARTH DIAGRAM ── */
+  .earth-diagram-section {
+    background: var(--stratum);
+  }
+
+  .earth-diagram-wrap {
+    display: grid;
+    grid-template-columns: 1fr 1.2fr;
+    gap: 6rem;
+    align-items: center;
+    max-width: 1100px;
+  }
+
+  .earth-svg-wrap {
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+  /* Layer legend */
+  .layer-legend {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    margin-top: 2rem;
+  }
+
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    cursor: pointer;
+    transition: opacity 0.3s;
+  }
+
+  .legend-item:hover { opacity: 0.8; }
+
+  .legend-swatch {
+    width: 14px;
+    height: 14px;
+    border-radius: 2px;
+    flex-shrink: 0;
+  }
+
+  .legend-text {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.68em;
+    letter-spacing: 0.05em;
+    color: var(--text-dim);
+    text-transform: uppercase;
+  }
+
+  .legend-temp {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.62em;
+    color: var(--ember);
+    margin-left: auto;
+    padding-left: 1rem;
+  }
+
+  /* ── SOLAR SYSTEM ANALOGIES ── */
+  .analogies-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 2px;
+    max-width: 960px;
+    background: rgba(200,98,42,0.15);
+    margin: 3rem 0;
+  }
+
+  .analogy-card {
+    background: var(--deep);
+    padding: 2.5rem 2rem;
+    position: relative;
+  }
+
+  .analogy-body {
+    font-size: 1.5rem;
+    color: var(--ember);
+    font-family: 'Playfair Display', serif;
+    font-weight: 700;
+    margin-bottom: 1rem;
+  }
+
+  .analogy-title {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.7em;
+    letter-spacing: 0.1em;
+    color: var(--amber);
+    text-transform: uppercase;
+    margin-bottom: 0.8rem;
+  }
+
+  .analogy-text {
+    font-size: 0.9rem;
+    color: var(--iron);
+    line-height: 1.65;
+  }
+
+  .analogy-tag {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.6em;
+    color: var(--text-dim);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-top: 1.5rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--accent-line);
+  }
+
+  /* ── TIMELINE / FAILURES ── */
+  .failures-section {
+    background: var(--stratum);
+  }
+
+  .failure-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0px;
+    max-width: 820px;
+    margin: 2rem 0;
+  }
+
+  .failure-item {
+    display: grid;
+    grid-template-columns: 3px 1fr;
+    gap: 0 2rem;
+    padding: 2.5rem 0;
+    position: relative;
+    cursor: pointer;
+  }
+
+  .failure-line {
+    background: var(--slate);
+    transition: background 0.3s;
+    position: relative;
+  }
+
+  .failure-item:hover .failure-line {
+    background: var(--ember);
+    box-shadow: 0 0 12px var(--ember);
+  }
+
+  .failure-dot {
+    position: absolute;
+    width: 9px; height: 9px;
+    background: var(--slate);
+    border-radius: 50%;
+    left: -3px; top: 2.5rem;
+    transition: background 0.3s, box-shadow 0.3s;
+  }
+
+  .failure-item:hover .failure-dot {
+    background: var(--ember);
+    box-shadow: 0 0 10px var(--ember);
+  }
+
+  .failure-content { padding-left: 0; }
+
+  .failure-label {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.65em;
+    letter-spacing: 0.12em;
+    color: var(--ember);
+    text-transform: uppercase;
+    margin-bottom: 0.5rem;
+  }
+
+  .failure-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.3rem;
+    color: var(--text-bright);
+    margin-bottom: 0.8rem;
+  }
+
+  .failure-text {
+    font-size: 0.92rem;
+    color: var(--iron);
+    line-height: 1.7;
+    max-width: 600px;
+  }
+
+  /* ── WHAT WE KNOW / DON'T KNOW ── */
+  .epistemic-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2px;
+    max-width: 960px;
+    background: rgba(200,98,42,0.15);
+    margin: 3rem 0;
+  }
+
+  .epistemic-panel {
+    background: var(--deep);
+    padding: 3rem 2.5rem;
+  }
+
+  .epistemic-panel.known { border-top: 3px solid var(--ember); }
+  .epistemic-panel.unknown { border-top: 3px solid var(--slate); }
+
+  .epistemic-header {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.7em;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    margin-bottom: 2rem;
+  }
+
+  .known .epistemic-header { color: var(--amber); }
+  .unknown .epistemic-header { color: var(--text-dim); }
+
+  .epistemic-list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 1.1rem;
+  }
+
+  .epistemic-list li {
+    font-size: 0.9rem;
+    color: var(--text);
+    line-height: 1.6;
+    padding-left: 1.5rem;
+    position: relative;
+  }
+
+  .epistemic-list li::before {
+    content: '—';
+    position: absolute;
+    left: 0;
+    color: var(--ember);
+    font-family: 'Space Mono', monospace;
+  }
+
+  .unknown .epistemic-list li::before { color: var(--slate); }
+
+  /* ── HYPOTHESIS MECHANISM ── */
+  .mechanism-section { background: var(--deep); }
+
+  .mechanism-flow {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    max-width: 640px;
+    margin: 3rem 0;
+  }
+
+  .mechanism-step {
+    display: grid;
+    grid-template-columns: 40px 1fr;
+    gap: 0 1.5rem;
+    position: relative;
+  }
+
+  .step-track {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .step-node {
+    width: 40px; height: 40px;
+    border-radius: 50%;
+    background: var(--stratum);
+    border: 2px solid var(--ember);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Space Mono', monospace;
+    font-size: 0.7em;
+    color: var(--ember);
+    flex-shrink: 0;
+    z-index: 1;
+    transition: background 0.3s, box-shadow 0.3s;
+  }
+
+  .mechanism-step:hover .step-node {
+    background: var(--ember);
+    color: var(--void);
+    box-shadow: 0 0 20px rgba(200,98,42,0.5);
+  }
+
+  .step-connector {
+    width: 2px;
+    flex: 1;
+    background: linear-gradient(to bottom, var(--ember), var(--slate));
+    min-height: 2rem;
+  }
+
+  .step-body {
+    padding: 0.5rem 0 2.5rem;
+  }
+
+  .step-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.1rem;
+    color: var(--text-bright);
+    margin-bottom: 0.5rem;
+  }
+
+  .step-text {
+    font-size: 0.88rem;
+    color: var(--iron);
+    line-height: 1.65;
+  }
+
+  /* ── 6-YEAR SIGNAL ── */
+  .signal-section { background: var(--stratum); }
+
+  .signal-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 1.5px;
+    max-width: 960px;
+    background: rgba(200,98,42,0.15);
+    margin: 3rem 0;
+  }
+
+  .signal-item {
+    background: var(--deep);
+    padding: 1.5rem;
+    transition: background 0.3s;
+    cursor: default;
+  }
+
+  .signal-item:hover { background: var(--mantle); }
+
+  .signal-icon {
+    font-size: 1.6rem;
+    margin-bottom: 0.8rem;
+    display: block;
+  }
+
+  .signal-name {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.68em;
+    letter-spacing: 0.05em;
+    color: var(--amber);
+    text-transform: uppercase;
+    line-height: 1.4;
+  }
+
+  /* ── RESEARCH PROGRAMME ── */
+  .research-section { background: var(--mantle); }
+
+  .research-steps {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.5px;
+    max-width: 840px;
+    background: rgba(200,98,42,0.2);
+    margin: 3rem 0;
+  }
+
+  .research-step {
+    background: var(--stratum);
+    padding: 2.5rem;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .research-step::after {
+    content: attr(data-num);
+    position: absolute;
+    right: 1.5rem;
+    bottom: 1rem;
+    font-family: 'Playfair Display', serif;
+    font-size: 5rem;
+    font-weight: 900;
+    color: rgba(200, 98, 42, 0.06);
+    line-height: 1;
+    pointer-events: none;
+  }
+
+  .research-tag {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.62em;
+    letter-spacing: 0.15em;
+    color: var(--ember);
+    text-transform: uppercase;
+    margin-bottom: 1rem;
+    display: block;
+  }
+
+  .research-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.15rem;
+    color: var(--text-bright);
+    margin-bottom: 0.8rem;
+  }
+
+  .research-text {
+    font-size: 0.88rem;
+    color: var(--iron);
+    line-height: 1.65;
+  }
+
+  /* ── CONCLUSION ── */
+  .conclusion-section {
+    background: var(--void);
+    min-height: 60vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+
+  .conclusion-text {
+    max-width: 760px;
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(1.2rem, 2.2vw, 1.7rem);
+    line-height: 1.7;
+    color: var(--pale-gold);
+    font-style: italic;
+  }
+
+  .conclusion-text em {
+    color: var(--ember);
+    font-style: normal;
+  }
+
+  /* ── FOOTER ── */
+  footer {
+    background: var(--stratum);
+    padding: 4rem 6vw;
+    border-top: 1px solid var(--accent-line);
+  }
+
+  .footer-inner {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 4rem;
+    max-width: 960px;
+  }
+
+  .footer-title {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.68em;
+    letter-spacing: 0.15em;
+    color: var(--ember);
+    text-transform: uppercase;
+    margin-bottom: 1.5rem;
+  }
+
+  .footer-text {
+    font-size: 0.88rem;
+    color: var(--text-dim);
+    line-height: 1.7;
+  }
+
+  .ref-list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 0.8rem;
+  }
+
+  .ref-list li {
+    font-size: 0.82rem;
+    color: var(--text-dim);
+    line-height: 1.5;
+    padding-left: 1.2rem;
+    position: relative;
+  }
+
+  .ref-list li::before {
+    content: '→';
+    position: absolute;
+    left: 0;
+    color: var(--ember);
+    font-size: 0.75em;
+  }
+
+  .footer-bottom {
+    margin-top: 3rem;
+    padding-top: 2rem;
+    border-top: 1px solid rgba(200,98,42,0.15);
+    font-family: 'Space Mono', monospace;
+    font-size: 0.62em;
+    letter-spacing: 0.1em;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    display: flex;
+    justify-content: space-between;
+    max-width: 960px;
+  }
+
+  /* ── INTERACTIVE ORBIT VIZ ── */
+  #orbit-canvas {
+    width: 100%;
+    height: 300px;
+    display: block;
+    margin: 2rem 0;
+    border: 1px solid var(--accent-line);
+    background: var(--void);
+  }
+
+  /* ── SCROLL REVEAL ── */
+  .reveal {
+    opacity: 0;
+    transform: translateY(32px);
+    transition: opacity 0.8s ease, transform 0.8s ease;
+  }
+
+  .reveal.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 768px) {
+    nav { padding: 1rem 1.5rem; }
+    .nav-links { display: none; }
+    section { padding: 5rem 5vw; }
+    .hero { padding: 0 5vw 6vh; }
+    .earth-diagram-wrap { grid-template-columns: 1fr; gap: 3rem; }
+    .analogies-grid { grid-template-columns: 1fr; }
+    .epistemic-grid { grid-template-columns: 1fr; }
+    .research-steps { grid-template-columns: 1fr; }
+    .footer-inner { grid-template-columns: 1fr; gap: 2rem; }
+    .footer-bottom { flex-direction: column; gap: 1rem; }
+    .ring:nth-child(2), .ring:nth-child(3) { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<!-- NAVIGATION -->
+<nav>
+  <a href="#" class="nav-brand">Gravitic Heating · Hypothesis</a>
+  <ul class="nav-links">
+    <li><a href="#deficit">Thermal Deficit</a></li>
+    <li><a href="#mechanism">Mechanism</a></li>
+    <li><a href="#evidence">Evidence</a></li>
+    <li><a href="#failures">Model Failures</a></li>
+    <li><a href="#signal">6-Year Signal</a></li>
+    <li><a href="#research">Research</a></li>
+  </ul>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-bg"></div>
+  <div class="orbital-rings">
+    <div class="ring"><div class="ring-dot"></div></div>
+    <div class="ring"><div class="ring-dot"></div></div>
+    <div class="ring"><div class="ring-dot"></div></div>
+  </div>
+
+  <span class="hero-eyebrow">Hypothesis · March 2026</span>
+  <h1 class="hero-title">The Fire Beneath<br><em>the Equations</em></h1>
+  <p class="hero-subtitle">An unmodelled planetary forcing in Earth's climate system — and the thirty-year gap it may explain.</p>
+
+  <div class="hero-meta">
+    <div class="meta-item">
+      <span class="meta-label">Proposed Mechanism</span>
+      <span class="meta-value">Gravitic Interior Heating</span>
+    </div>
+    <div class="meta-item">
+      <span class="meta-label">Thermal Deficit</span>
+      <span class="meta-value">~27 TW Unaccounted</span>
+    </div>
+    <div class="meta-item">
+      <span class="meta-label">Status</span>
+      <span class="meta-value">Hypothesis · Untested</span>
+    </div>
+  </div>
+
+  <div class="hero-scroll">
+    <div class="scroll-line"></div>
+    Scroll
+  </div>
+</section>
+
+<div class="strata-divider"></div>
+
+<!-- OPENING PREMISE -->
+<section id="premise">
+  <div class="reveal">
+    <span class="section-number">Premise</span>
+    <h2 class="section-title">A plumber's problem<br><em>on a planetary scale</em></h2>
+  </div>
+  <div class="prose reveal">
+    <p>Consider a simple accounting problem. You are trying to track where the heat in a house is coming from. You measure the boiler output. You calculate losses through the walls. You add everything up — and the numbers don't balance. The house is warmer than your ledger allows. A plumber, faced with this situation, does not conclude that thermodynamics is wrong. A plumber concludes that there is a <strong>pipe somewhere that hasn't been found yet</strong>.</p>
+    <p>Earth has a missing pipe.</p>
+    <p>The planet radiates approximately <strong>47 terawatts</strong> of heat from its interior — roughly a thousand times humanity's current electrical generating capacity, flowing continuously upward from the depths of the world. But when scientists tally the known sources of that heat — the slow radioactive decay of uranium, thorium, and potassium buried deep in the mantle — they can account for only about <strong>20 terawatts</strong>. The remaining 27 terawatts are real. They are measured. And they have no agreed explanation.</p>
+    <p>This document explores the hypothesis that the missing heat has been hiding in plain sight — generated by the same mechanism that turns Jupiter's moon Io into the most volcanically active body in the solar system, and that it has been quietly shaping Earth's climate on timescales our models were never built to see.</p>
+  </div>
+
+  <div class="pull-quote reveal">
+    <p>"We are attributing the present warming primarily to one forcing using models that we know fail to account for all the relevant forces."</p>
+  </div>
+</section>
+
+<div class="strata-divider"></div>
+
+<!-- THERMAL DEFICIT -->
+<section id="deficit" style="background: var(--stratum);">
+  <span class="section-number reveal">01 · The Numbers</span>
+  <h2 class="section-title reveal">Earth's unresolved<br><em>thermal budget</em></h2>
+
+  <div class="data-grid reveal">
+    <div class="data-card">
+      <div class="data-label">Total Surface Heat Flux</div>
+      <div class="data-number">47<span class="data-unit">TW</span></div>
+      <div class="data-desc">Measured thermal energy radiating from Earth's interior into oceans and atmosphere annually.</div>
+    </div>
+    <div class="data-card">
+      <div class="data-label">Radiogenic Production</div>
+      <div class="data-number">20<span class="data-unit">TW</span></div>
+      <div class="data-desc">Estimated heat from radioactive decay of uranium, thorium, and potassium in the mantle and crust.</div>
+    </div>
+    <div class="data-card">
+      <div class="data-label">Unexplained Deficit</div>
+      <div class="data-number">27<span class="data-unit">TW</span></div>
+      <div class="data-desc">The gap. Real, measured, published, and without a fully accepted explanation for decades.</div>
+    </div>
+    <div class="data-card">
+      <div class="data-label">Classical Tidal Dissipation</div>
+      <div class="data-number">0.1<span class="data-unit">TW</span></div>
+      <div class="data-desc">Conventional estimate for solid Earth tidal dissipation at the surface — deemed negligible and excluded from models.</div>
+    </div>
+  </div>
+
+  <div class="prose reveal">
+    <p>The assumption that gravitational interior forcing is negligible was made for <strong>computational tractability in the 1970s and 1980s</strong>, when general circulation models were first constructed. It has been carried forward by institutional inertia, not by systematic evaluation.</p>
+    <p>The 0.1 TW tidal dissipation figure applies to surface rock deforming uniformly. The shear at the <strong>core-mantle boundary</strong> — where a liquid iron layer meets a solid rocky layer under differential gravitational forcing — is a different physical process entirely, and it has not been calculated with comparable rigour.</p>
+  </div>
+</section>
+
+<div class="strata-divider"></div>
+
+<!-- EARTH LAYERS DIAGRAM -->
+<section id="layers">
+  <span class="section-number reveal">02 · Earth's Interior</span>
+  <h2 class="section-title reveal">A differentiated body,<br><em>layer by layer</em></h2>
+
+  <div class="earth-diagram-wrap">
+    <div class="earth-svg-wrap reveal">
+      <svg viewBox="0 0 340 340" xmlns="http://www.w3.org/2000/svg" width="100%" max-width="340">
+        <!-- Outer space glow -->
+        <defs>
+          <radialGradient id="coreGrad" cx="50%" cy="50%" r="50%">
+            <stop offset="0%" stop-color="#e8c060"/>
+            <stop offset="40%" stop-color="#c8622a"/>
+            <stop offset="100%" stop-color="#7a2208"/>
+          </radialGradient>
+          <radialGradient id="outerCoreGrad" cx="50%" cy="50%" r="50%">
+            <stop offset="0%" stop-color="#b85520"/>
+            <stop offset="100%" stop-color="#7a3010"/>
+          </radialGradient>
+          <radialGradient id="mantleGrad" cx="50%" cy="50%" r="50%">
+            <stop offset="0%" stop-color="#4a2810"/>
+            <stop offset="100%" stop-color="#2a1808"/>
+          </radialGradient>
+          <radialGradient id="crustGrad" cx="50%" cy="50%" r="50%">
+            <stop offset="0%" stop-color="#2a2a3a"/>
+            <stop offset="100%" stop-color="#1a1a28"/>
+          </radialGradient>
+          <filter id="glow">
+            <feGaussianBlur stdDeviation="3" result="blur"/>
+            <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+          </filter>
+        </defs>
+
+        <!-- Lithosphere / Crust -->
+        <circle cx="170" cy="170" r="158" fill="url(#crustGrad)" stroke="rgba(200,98,42,0.2)" stroke-width="1"/>
+        <!-- Mantle -->
+        <circle cx="170" cy="170" r="130" fill="url(#mantleGrad)" stroke="rgba(200,98,42,0.25)" stroke-width="1"/>
+        <!-- Outer Core -->
+        <circle cx="170" cy="170" r="82" fill="url(#outerCoreGrad)" stroke="rgba(200,130,42,0.4)" stroke-width="1.5" filter="url(#glow)"/>
+        <!-- Inner Core -->
+        <circle cx="170" cy="170" r="40" fill="url(#coreGrad)" stroke="rgba(232,200,96,0.6)" stroke-width="2" filter="url(#glow)"/>
+
+        <!-- Shear zone indicator at CMB -->
+        <circle cx="170" cy="170" r="82" fill="none" stroke="rgba(232,200,96,0.15)" stroke-width="8" stroke-dasharray="6 4"/>
+
+        <!-- Annotation lines -->
+        <line x1="170" y1="130" x2="220" y2="70" stroke="rgba(200,98,42,0.5)" stroke-width="1"/>
+        <line x1="170" y1="90" x2="220" y2="52" stroke="rgba(200,98,42,0.3)" stroke-width="1"/>
+        <line x1="210" y1="170" x2="265" y2="120" stroke="rgba(200,150,42,0.5)" stroke-width="1"/>
+        <line x1="252" y1="170" x2="275" y2="130" stroke="rgba(200,98,42,0.3)" stroke-width="1"/>
+
+        <!-- Labels -->
+        <text x="224" y="67" fill="#e8c060" font-family="monospace" font-size="9" letter-spacing="1">INNER CORE</text>
+        <text x="224" y="78" fill="#8a7a6a" font-family="monospace" font-size="7.5">~5,000°C · Solid Fe</text>
+
+        <text x="268" y="127" fill="#d4882f" font-family="monospace" font-size="9" letter-spacing="1">OUTER CORE</text>
+        <text x="268" y="138" fill="#8a7a6a" font-family="monospace" font-size="7.5">Liquid Fe · ~4,000°C</text>
+
+        <text x="20" y="220" fill="#c8622a" font-family="monospace" font-size="9" letter-spacing="1">MANTLE</text>
+        <text x="20" y="231" fill="#8a7a6a" font-family="monospace" font-size="7.5">Semi-viscous rock</text>
+        <line x1="85" y1="224" x2="58" y2="224" stroke="rgba(200,98,42,0.4)" stroke-width="1"/>
+
+        <text x="20" y="265" fill="#4a4a5a" font-family="monospace" font-size="9" letter-spacing="1">LITHOSPHERE</text>
+        <line x1="90" y1="259" x2="58" y2="259" stroke="rgba(74,74,90,0.5)" stroke-width="1"/>
+
+        <!-- CMB shear label -->
+        <text x="60" y="170" fill="rgba(232,200,96,0.6)" font-family="monospace" font-size="7" letter-spacing="0.5">CMB SHEAR</text>
+        <text x="60" y="180" fill="rgba(232,200,96,0.4)" font-family="monospace" font-size="6.5">← key interface</text>
+      </svg>
+    </div>
+
+    <div class="reveal">
+      <p class="prose" style="margin-bottom: 2rem;">Earth is not a solid ball. It is several planets nested inside each other, each with different densities and viscosities — each responding <strong>differently</strong> to gravitational perturbations from outside.</p>
+      <p class="prose" style="margin-bottom: 2rem;">When the Sun, Moon, or Jupiter pulls gravitationally on Earth, it pulls with a <strong>differential force</strong> — slightly harder on the near side than the far side. This tidal gradient acts on the whole volume of the planet, but not equally across its layers.</p>
+      <p class="prose">The liquid outer core, being fluid, responds to gravitational perturbation differently from the solid mantle surrounding it. This differential response generates <strong>shear at the core-mantle boundary</strong> — relative motion between layers of different density and viscosity. Shear generates friction. Friction generates heat.</p>
+
+      <div class="layer-legend" style="margin-top: 2.5rem;">
+        <div class="legend-item">
+          <div class="legend-swatch" style="background:#e8c060;"></div>
+          <span class="legend-text">Inner Core — Solid Fe/Ni</span>
+          <span class="legend-temp">~5,000°C</span>
+        </div>
+        <div class="legend-item">
+          <div class="legend-swatch" style="background:#b85520;"></div>
+          <span class="legend-text">Outer Core — Liquid Fe</span>
+          <span class="legend-temp">~4,000°C</span>
+        </div>
+        <div class="legend-item">
+          <div class="legend-swatch" style="background:#4a2810;"></div>
+          <span class="legend-text">Mantle — Semi-viscous rock</span>
+          <span class="legend-temp">~1,000–3,500°C</span>
+        </div>
+        <div class="legend-item">
+          <div class="legend-swatch" style="background:#2a2a3a;"></div>
+          <span class="legend-text">Lithosphere / Crust</span>
+          <span class="legend-temp">0–~900°C</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="strata-divider"></div>
+
+<!-- MECHANISM -->
+<section id="mechanism" class="mechanism-section">
+  <span class="section-number reveal">03 · The Mechanism</span>
+  <h2 class="section-title reveal">How orbital gravity<br><em>becomes interior heat</em></h2>
+
+  <div class="mechanism-flow reveal">
+    <div class="mechanism-step">
+      <div class="step-track">
+        <div class="step-node">01</div>
+        <div class="step-connector"></div>
+      </div>
+      <div class="step-body">
+        <div class="step-title">Orbital Eccentricity Varies</div>
+        <div class="step-text">Jupiter and Saturn perturb Earth's orbit over a ~100,000-year cycle, stretching it from near-circular to more elliptical. A more elliptical orbit means greater variation in Earth's distance from the Sun each year.</div>
+      </div>
+    </div>
+
+    <div class="mechanism-step">
+      <div class="step-track">
+        <div class="step-node">02</div>
+        <div class="step-connector"></div>
+      </div>
+      <div class="step-body">
+        <div class="step-title">Tidal Gradient Fluctuates More Severely</div>
+        <div class="step-text">Greater orbital eccentricity means larger variation in the gravitational gradient experienced by Earth's interior per orbit. The differential force between Earth's near and far sides to the Sun grows and shrinks more dramatically each year.</div>
+      </div>
+    </div>
+
+    <div class="mechanism-step">
+      <div class="step-track">
+        <div class="step-node">03</div>
+        <div class="step-connector"></div>
+      </div>
+      <div class="step-body">
+        <div class="step-title">Differential Acceleration Across Density Layers</div>
+        <div class="step-text">Earth's layered interior — with liquid outer core, solid inner core, and viscous mantle — responds differently to the same gravitational perturbation. The liquid core sloshes relative to the surrounding solid rock.</div>
+      </div>
+    </div>
+
+    <div class="mechanism-step">
+      <div class="step-track">
+        <div class="step-node">04</div>
+        <div class="step-connector"></div>
+      </div>
+      <div class="step-body">
+        <div class="step-title">Shear at the Core-Mantle Boundary</div>
+        <div class="step-text">Relative motion between the liquid core and solid mantle generates shear stress at their boundary. This interface, under enormous pressure at ~2,900 km depth, converts mechanical energy into heat through viscous dissipation.</div>
+      </div>
+    </div>
+
+    <div class="mechanism-step">
+      <div class="step-track">
+        <div class="step-node">05</div>
+        <div class="step-connector" style="background: linear-gradient(to bottom, var(--slate), transparent);"></div>
+      </div>
+      <div class="step-body">
+        <div class="step-title">Interior Heat Varies with Orbital Eccentricity</div>
+        <div class="step-text">The result: Earth's internal heat output is not constant. It is modulated by orbital eccentricity on precisely the 100,000-year timescale that dominates glacial cycles — a forcing that varies exactly where the climate models fail to match the proxy record.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="prose reveal">
+    <p>The mechanism is also expected to operate via <strong>gravitomagnetic effects</strong> — under general relativity, the gravitational action of a rotating mass on another rotating mass includes frame-dragging terms that may generate additional heat through differential rotation of Earth's interior layers, beyond what classical tidal theory predicts.</p>
+    <p>A peer-reviewed calculation published in 2013 proposed that this gravitomagnetic action of the Sun on Earth's rotating interior layers alone could contribute approximately <strong>54 terawatts</strong> to Earth's heat budget. That figure may or may not be correct — but it was published, and largely set aside without systematic refutation or confirmation.</p>
+  </div>
+</section>
+
+<div class="strata-divider"></div>
+
+<!-- SOLAR SYSTEM ANALOGIES -->
+<section id="evidence" style="background: var(--void);">
+  <span class="section-number reveal">04 · Proof of Concept</span>
+  <h2 class="section-title reveal">The mechanism is proven<br><em>across the solar system</em></h2>
+
+  <div class="prose reveal" style="margin-bottom: 1rem;">
+    <p>Gravitational interior heating is not theoretical speculation. It is directly observed, thermally measured, and responsible for the geological activity of multiple solar system bodies — at scales far exceeding what classical tidal models predict for Earth.</p>
+  </div>
+
+  <div class="analogies-grid reveal">
+    <div class="analogy-card">
+      <div class="analogy-body">Io</div>
+      <div class="analogy-title">Jupiter's Moon · Proven Case</div>
+      <div class="analogy-text">The most volcanically active body in the solar system. Its heat source is not radioactive decay — it is gravitational shearing. As Io moves closer and farther from Jupiter each orbit, its tidal bulge grows and shrinks. The continual flexing of solid rock generates friction and heat, released through hundreds of simultaneous volcanoes.</div>
+      <div class="analogy-tag">Mechanism: Proven · Thermally Measured</div>
+    </div>
+    <div class="analogy-card">
+      <div class="analogy-body">Europa</div>
+      <div class="analogy-title">Jupiter's Moon · Liquid Ocean</div>
+      <div class="analogy-text">Maintains a liquid subsurface ocean beneath an ice shell despite being far from the Sun. The heat source is tidal dissipation from Jupiter's gravity, modulated by orbital resonance. Gravitational forcing maintains liquid water — and habitability — far beyond what solar insolation alone could explain.</div>
+      <div class="analogy-tag">Implication: Gravity as primary heat source</div>
+    </div>
+    <div class="analogy-card">
+      <div class="analogy-body">Enceladus</div>
+      <div class="analogy-title">Saturn's Moon · Active Geysers</div>
+      <div class="analogy-text">Actively shoots geysers of liquid water hundreds of kilometres into space. The driving force is tidal heating from Saturn. A small icy moon, far from the Sun, sustained as a geologically active ocean world entirely by gravitational energy converted to heat through orbital mechanics.</div>
+      <div class="analogy-tag">Implication: Scale far exceeds classical prediction</div>
+    </div>
+  </div>
+
+  <div class="prose reveal">
+    <p>If orbital gravity turns Io into a volcanic world, keeps Europa's ocean liquid, and drives Enceladus's geysers — all through the same basic mechanism of gravitational differential forcing on a differentiated body — then the question is not whether the mechanism exists on Earth. It must. The question is <strong>how large the effect is</strong>, and whether it varies on the same timescales as the glacial record.</p>
+  </div>
+
+  <div class="pull-quote reveal">
+    <p>"A forcing mechanism proven to drive planetary geology throughout the solar system has been assumed negligible on Earth without systematic quantitative evaluation."</p>
+  </div>
+</section>
+
+<div class="strata-divider"></div>
+
+<!-- MODEL FAILURES -->
+<section id="failures" class="failures-section">
+  <span class="section-number reveal">05 · The Modelling Gap</span>
+  <h2 class="section-title reveal">Three persistent failures<br><em>in 30 years of climate models</em></h2>
+
+  <div class="prose reveal">
+    <p>Despite decades of refinement, Earth System Models produce systematic errors against the physical record at precisely the timescales where gravitic interior forcing would be expected to operate. These are not calibration errors — they are structural failures indicating missing physics.</p>
+  </div>
+
+  <div class="failure-list reveal">
+    <div class="failure-item">
+      <div class="failure-line"><div class="failure-dot"></div></div>
+      <div class="failure-content">
+        <div class="failure-label">The Core Problem · Unresolved since 1990s</div>
+        <div class="failure-title">The Holocene Temperature Conundrum</div>
+        <div class="failure-text">Proxy reconstructions from 1,310 pollen records, ocean sediment cores, and lake sediments consistently show the Northern Hemisphere <em>cooling</em> since approximately 7,000 years ago — consistent with declining boreal summer insolation. Climate models simulate the opposite: a long-term <em>warming</em> trend. The two accounts produce opposite signs for temperature change during the same period. This discrepancy has been open and unresolved for over 30 years.</div>
+      </div>
+    </div>
+
+    <div class="failure-item">
+      <div class="failure-line"><div class="failure-dot"></div></div>
+      <div class="failure-content">
+        <div class="failure-label">Temporal Shift · ~1 Million Years Ago</div>
+        <div class="failure-title">The 100,000-Year Problem</div>
+        <div class="failure-text">For the past 800,000 years, glacial cycles have followed a dominant ~100,000-year periodicity matching Earth's eccentricity cycle. Before approximately 1 million years ago, the dominant periodicity was ~41,000 years, matching obliquity. No identified change in orbital forcing explains this transition. The shift arose from within the Earth system itself — and no existing model satisfactorily explains why it happened.</div>
+      </div>
+    </div>
+
+    <div class="failure-item">
+      <div class="failure-line"><div class="failure-dot"></div></div>
+      <div class="failure-content">
+        <div class="failure-label">Measurement Precision · Statistical Validity</div>
+        <div class="failure-title">The Proxy Uncertainty Floor</div>
+        <div class="failure-text">The median uncertainty across all Holocene paleoclimate proxy records is ±1.7°C. Individual proxy types reach ±3°C. The entire anthropogenic warming signal attributed to human activity since 1850 is approximately 1.5°C — a value that sits inside the error bar of the measurement tool used to establish its historical context. Peer-reviewed literature has explicitly noted that IPCC statements claiming current temperatures are unprecedented are statistically invalid at this precision.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="prose reveal">
+    <p>If gravitic interior heating varies with orbital eccentricity, it would be <strong>highest during periods of peak eccentricity</strong> and lowest during circular orbit phases. The current orbital period is one of unusually low eccentricity — meaning Earth may be experiencing <em>reduced</em> gravitational interior heating relative to the Pleistocene glacial cycles. Reduced interior heating → reduced mantle heat flux → reduced submarine volcanism → potentially reduced deep ocean CO₂ outgassing: a background cooling influence operating silently beneath the surface energy budget, invisible to models that never included it.</p>
+    <p>This would provide a physical mechanism for the Holocene cooling trend that the proxy record consistently shows but climate models consistently fail to reproduce. The models exclude the mechanism, so they cannot reproduce the effect.</p>
+  </div>
+</section>
+
+<div class="strata-divider"></div>
+
+<!-- 6-YEAR SIGNAL -->
+<section id="signal" class="signal-section">
+  <span class="section-number reveal">06 · Empirical Corroboration</span>
+  <h2 class="section-title reveal">The 6-year signal that<br><em>no model predicted</em></h2>
+
+  <div class="prose reveal">
+    <p>In 2023, a series of papers identified a <strong>6-year oscillation</strong> appearing simultaneously across a remarkable set of Earth's observable properties — propagating from the deepest interior of the planet to the surface climate system. The period aligns with planetary ephemerides. The physical mechanism is not fully understood, and it is included in no standard climate model.</p>
+  </div>
+
+  <div class="signal-grid reveal">
+    <div class="signal-item">
+      <span class="signal-icon">🌀</span>
+      <div class="signal-name">Fluid Motions<br>in Outer Core</div>
+    </div>
+    <div class="signal-item">
+      <span class="signal-icon">🧲</span>
+      <div class="signal-name">Earth's Internal<br>Magnetic Field</div>
+    </div>
+    <div class="signal-item">
+      <span class="signal-icon">⏱</span>
+      <div class="signal-name">Length of Day<br>(Rotation Rate)</div>
+    </div>
+    <div class="signal-item">
+      <span class="signal-icon">🌍</span>
+      <div class="signal-name">Polar Motion<br>& Wobble</div>
+    </div>
+    <div class="signal-item">
+      <span class="signal-icon">💨</span>
+      <div class="signal-name">Atmospheric<br>Angular Momentum</div>
+    </div>
+    <div class="signal-item">
+      <span class="signal-icon">🌊</span>
+      <div class="signal-name">Sea Level<br>Rise Rate</div>
+    </div>
+    <div class="signal-item">
+      <span class="signal-icon">🧊</span>
+      <div class="signal-name">Glacier & Greenland<br>Ice Mass Loss</div>
+    </div>
+    <div class="signal-item">
+      <span class="signal-icon">🌧</span>
+      <div class="signal-name">Global Precipitation<br>Patterns</div>
+    </div>
+    <div class="signal-item">
+      <span class="signal-icon">💧</span>
+      <div class="signal-name">Land Water<br>Storage</div>
+    </div>
+    <div class="signal-item">
+      <span class="signal-icon">🌡</span>
+      <div class="signal-name">Ocean Heat<br>Content</div>
+    </div>
+    <div class="signal-item">
+      <span class="signal-icon">⚡</span>
+      <div class="signal-name">Earth's Energy<br>Imbalance</div>
+    </div>
+    <div class="signal-item" style="background: var(--stratum); border: 1px solid var(--accent-line);">
+      <span class="signal-icon" style="opacity:0.4;">?</span>
+      <div class="signal-name" style="color: var(--text-dim);">Mechanism:<br>Unknown</div>
+    </div>
+  </div>
+
+  <div class="pull-quote reveal">
+    <p>"The energy imbalance of Earth's surface — the number that climate scientists track as the fingerprint of global warming — is oscillating in synchrony with motions in the liquid iron core, thousands of kilometres below."</p>
+  </div>
+
+  <div class="prose reveal">
+    <p>This is empirical evidence of a direct, active link between Earth's deep interior — where gravitational forcing operates — and the surface climate variables used to assess global warming. It is not a marginal finding. It appears across <strong>multiple independent observational systems</strong>. The core and the climate are talking to each other, and nobody knows exactly how.</p>
+  </div>
+</section>
+
+<div class="strata-divider"></div>
+
+<!-- WHAT WE KNOW / DON'T KNOW -->
+<section id="epistemic" style="background: var(--deep);">
+  <span class="section-number reveal">07 · Epistemic Honesty</span>
+  <h2 class="section-title reveal">What is rock solid —<br><em>and what is not</em></h2>
+
+  <div class="epistemic-grid reveal">
+    <div class="epistemic-panel known">
+      <div class="epistemic-header">✓ &nbsp; Established Facts</div>
+      <ul class="epistemic-list">
+        <li>The orbital cooling trend (declining boreal summer insolation) has been active for ~7,000 years, documented in 1,310 pollen records</li>
+        <li>Earth has an unresolved ~27 TW thermal deficit — real, published, without accepted explanation</li>
+        <li>A 6-year cycle connects core dynamics directly to surface climate observables across 11 independent datasets</li>
+        <li>Planet-planet gravitational interactions have measurably altered Earth's orbital history, confirmed in geological sediments from 252 million years ago</li>
+        <li>Tidal heating drives the geology of Io, Europa, and Enceladus at scales far larger than classical Earth tidal estimates</li>
+        <li>Climate models produce the wrong sign for Holocene temperature trends vs. proxy data</li>
+        <li>The glacial periodicity shift ~1 million years ago has no fully accepted explanation</li>
+      </ul>
+    </div>
+    <div class="epistemic-panel unknown">
+      <div class="epistemic-header">~ &nbsp; Unquantified</div>
+      <ul class="epistemic-list">
+        <li>The magnitude of variable gravitational interior heating on Earth specifically</li>
+        <li>The variation of that forcing with orbital eccentricity over glacial-interglacial timescales</li>
+        <li>The coupling efficiency between interior heat variation and surface climate on relevant timescales</li>
+        <li>The proportion of the Holocene cooling trend attributable to this mechanism vs. other unmodelled processes</li>
+        <li>Whether the gravitomagnetic contribution estimate of ~54 TW is correct in order of magnitude</li>
+        <li>Whether the 27 TW deficit is constant, variable, or correlated with orbital parameters</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="prose reveal">
+    <p>This is not a claim that human emissions are not warming the planet. The instrumental record since 1850 is precise and unambiguous. The ~1.5°C of warming is real. The question is whether <strong>100% attribution to greenhouse gases</strong> is correct, or whether it is the result of a model that cannot distinguish between CO₂ forcing and unmodelled interior forcing — because it was never built to include the latter.</p>
+  </div>
+</section>
+
+<div class="strata-divider"></div>
+
+<!-- RESEARCH PROGRAMME -->
+<section id="research" class="research-section">
+  <span class="section-number reveal">08 · What Comes Next</span>
+  <h2 class="section-title reveal">A minimum viable<br><em>research programme</em></h2>
+
+  <div class="prose reveal" style="margin-bottom: 0.5rem;">
+    <p>Testing this hypothesis does not require new physics. It requires applying known gravitational theory to Earth's known internal structure, over a known orbital history, and comparing the result against a known proxy record. Four tractable steps:</p>
+  </div>
+
+  <div class="research-steps reveal">
+    <div class="research-step" data-num="1">
+      <span class="research-tag">Step 1 · Celestial Mechanics</span>
+      <div class="research-title">Quantify Variable Gravitational Forcing</div>
+      <div class="research-text">Calculate the differential gravitational acceleration across Earth's density-layered interior as a function of orbital eccentricity, lunar orbital parameters, and outer planet configurations over the past 2 million years. This is tractable without new physics.</div>
+    </div>
+    <div class="research-step" data-num="2">
+      <span class="research-tag">Step 2 · Palaeoclimate Correlation</span>
+      <div class="research-title">Match Against the Geological Record</div>
+      <div class="research-text">Compare the calculated forcing history against the proxy temperature record (particularly the Holocene cooling trend), the timing of glacial terminations, the 100,000-year periodicity transition, and periods of enhanced submarine volcanism.</div>
+    </div>
+    <div class="research-step" data-num="3">
+      <span class="research-tag">Step 3 · Climate Modelling</span>
+      <div class="research-title">Incorporate into Earth System Models</div>
+      <div class="research-text">Develop a parametrisation of variable interior heat output as a function of orbital eccentricity and include it in existing GCMs. Test whether inclusion of this forcing reduces the model-data discrepancy in the Holocene temperature record.</div>
+    </div>
+    <div class="research-step" data-num="4">
+      <span class="research-tag">Step 4 · Heat Flux Observation</span>
+      <div class="research-title">Resolve the Thermal Deficit</div>
+      <div class="research-text">Design an observational programme to characterise the 27 TW deficit — whether it is constant, variable, or correlated with orbital parameters. Requires improved global heat flux measurements, particularly from the ocean floor.</div>
+    </div>
+  </div>
+</section>
+
+<div class="strata-divider"></div>
+
+<!-- CONCLUSION -->
+<section class="conclusion-section">
+  <span class="section-number reveal">Conclusion</span>
+  <div class="conclusion-text reveal">
+    <p>The 30-year gap between model outputs and proxy observations is not a calibration problem. <em>It may be a missing physics problem.</em></p>
+    <br>
+    <p>Science advances by finding the things it has left out of the equations. The history of physics is a history of missing terms — each discovered not by doubting what was already known, but by taking seriously the places where what was known <em>failed to match what was measured.</em></p>
+    <br>
+    <p>Earth's interior is warm in ways we cannot fully explain. Earth's climate has cooled when our best models say it should have warmed. The core and the climate are oscillating together in ways no model predicted. And across the solar system, on Io and Europa and Enceladus, gravity turns orbital mechanics into <em>fire.</em></p>
+    <br>
+    <p>The fire may be here too. <em>We simply haven't looked for it carefully enough.</em></p>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-inner">
+    <div>
+      <div class="footer-title">About This Document</div>
+      <p class="footer-text">This educational resource presents a hypothesis grounding document and science communication essay exploring the role of variable gravitational interior forcing as an unmodelled climate driver. It is intended for educational exploration, not as a peer-reviewed claim. The hypothesis remains untested at the level of rigour it deserves.</p>
+    </div>
+    <div>
+      <div class="footer-title">Key Source Material</div>
+      <ul class="ref-list">
+        <li>Barker et al. (2025). Pleistocene 100-kyr glacial cycles. <em>Science</em>. DOI: 10.1126/science.adp3491</li>
+        <li>Herzschuh et al. (2022). Holocene temperature evolution. <em>Nature Communications</em></li>
+        <li>Kaufman et al. (2020). Holocene global mean surface temperature. <em>Scientific Data</em></li>
+        <li>Elbeze, A.C. (2013). Gravitomagnetism and Earth heat production. <em>PMC</em></li>
+        <li>Pfeffer / Cazenave et al. (2023). 6-year cycle in global climate observables. Multiple journals</li>
+        <li>Driscoll & Barnes (2015). Tidal heating of Earth-like exoplanets. <em>Astrobiology</em> 15, 739–760</li>
+      </ul>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <span>Gravitic Heating Hypothesis · Educational Resource · March 2026</span>
+    <span>Essay in the tradition of Isaac Asimov · Hypothesis Status: Untested</span>
+  </div>
+</footer>
+
+<script>
+  // Scroll reveal
+  const reveals = document.querySelectorAll('.reveal');
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach((entry, i) => {
+      if (entry.isIntersecting) {
+        setTimeout(() => {
+          entry.target.classList.add('visible');
+        }, 80);
+        observer.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.08 });
+  reveals.forEach(el => observer.observe(el));
+
+  // Stagger children of grids
+  document.querySelectorAll('.data-grid, .analogies-grid, .signal-grid, .research-steps, .epistemic-grid').forEach(grid => {
+    const children = grid.querySelectorAll('.data-card, .analogy-card, .signal-item, .research-step, .epistemic-panel');
+    const gridObserver = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          children.forEach((child, i) => {
+            child.style.opacity = '0';
+            child.style.transform = 'translateY(20px)';
+            child.style.transition = `opacity 0.5s ${i * 0.07}s ease, transform 0.5s ${i * 0.07}s ease`;
+            setTimeout(() => {
+              child.style.opacity = '1';
+              child.style.transform = 'translateY(0)';
+            }, 50);
+          });
+          gridObserver.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.05 });
+    gridObserver.observe(grid);
+  });
+
+  // Orbital canvas animation
+  const canvas = document.getElementById('orbit-canvas');
+  if (canvas) {
+    const ctx = canvas.getContext('2d');
+    let W, H, t = 0;
+
+    function resize() {
+      W = canvas.offsetWidth;
+      H = canvas.offsetHeight;
+      canvas.width = W * devicePixelRatio;
+      canvas.height = H * devicePixelRatio;
+      ctx.scale(devicePixelRatio, devicePixelRatio);
+    }
+
+    resize();
+    window.addEventListener('resize', resize);
+
+    const bodies = [
+      { label: 'Sun', r: 14, orbit: 0, speed: 0, color: '#e8c060', glow: 30 },
+      { label: 'Earth', r: 6, orbit: 80, speed: 0.012, color: '#4a8ac4', glow: 12, ecc: 0 },
+      { label: 'Mars', r: 4, orbit: 120, speed: 0.007, color: '#c86030', glow: 8 },
+      { label: 'Jupiter', r: 10, orbit: 200, speed: 0.002, color: '#c8a878', glow: 16 },
+    ];
+
+    let earthEcc = 0;
+    let eccDir = 1;
+
+    function draw() {
+      ctx.clearRect(0, 0, W, H);
+      ctx.fillStyle = '#060608';
+      ctx.fillRect(0, 0, W, H);
+
+      const cx = W * 0.35, cy = H * 0.5;
+
+      // Stars
+      if (!draw.stars) {
+        draw.stars = Array.from({length: 80}, () => ({
+          x: Math.random() * W, y: Math.random() * H,
+          s: Math.random() * 1.5 + 0.3,
+          o: Math.random() * 0.6 + 0.1
+        }));
+      }
+      draw.stars.forEach(s => {
+        ctx.fillStyle = `rgba(220,210,190,${s.o})`;
+        ctx.beginPath();
+        ctx.arc(s.x, s.y, s.s, 0, Math.PI * 2);
+        ctx.fill();
+      });
+
+      // Earth eccentricity pulse (visual)
+      earthEcc += 0.0003 * eccDir;
+      if (earthEcc > 0.35) eccDir = -1;
+      if (earthEcc < 0) eccDir = 1;
+      bodies[1].ecc = earthEcc;
+
+      // Orbit paths
+      bodies.slice(1).forEach(b => {
+        const a = b.orbit, bAxis = a * (1 - (b.ecc || 0) * 0.5);
+        ctx.beginPath();
+        ctx.ellipse(cx, cy, a, bAxis, 0, 0, Math.PI * 2);
+        ctx.strokeStyle = b === bodies[1]
+          ? `rgba(200,98,42,${0.15 + earthEcc * 0.5})`
+          : 'rgba(100,90,80,0.12)';
+        ctx.lineWidth = b === bodies[1] ? 1.5 : 0.8;
+        ctx.stroke();
+      });
+
+      // Jupiter influence line
+      const jup = bodies[3];
+      const jupAngle = t * jup.speed;
+      const jupX = cx + jup.orbit * Math.cos(jupAngle);
+      const jupY = cy + jup.orbit * Math.sin(jupAngle);
+      const earthAngle = t * bodies[1].speed;
+      const ea = bodies[1].orbit, eb = ea * (1 - earthEcc * 0.5);
+      const earthX = cx + ea * Math.cos(earthAngle);
+      const earthY = cy + eb * Math.sin(earthAngle);
+
+      const grad = ctx.createLinearGradient(jupX, jupY, earthX, earthY);
+      grad.addColorStop(0, 'rgba(200,168,120,0.0)');
+      grad.addColorStop(0.5, 'rgba(200,168,120,0.08)');
+      grad.addColorStop(1, 'rgba(200,98,42,0.0)');
+      ctx.beginPath();
+      ctx.moveTo(jupX, jupY);
+      ctx.lineTo(earthX, earthY);
+      ctx.strokeStyle = grad;
+      ctx.lineWidth = 1;
+      ctx.stroke();
+
+      // Sun glow
+      const sunGrad = ctx.createRadialGradient(cx, cy, 0, cx, cy, 60);
+      sunGrad.addColorStop(0, 'rgba(232,192,96,0.25)');
+      sunGrad.addColorStop(1, 'rgba(232,192,96,0)');
+      ctx.fillStyle = sunGrad;
+      ctx.beginPath();
+      ctx.arc(cx, cy, 60, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Sun
+      ctx.beginPath();
+      ctx.arc(cx, cy, 14, 0, Math.PI * 2);
+      ctx.fillStyle = '#e8c060';
+      ctx.fill();
+
+      // Planets
+      bodies.slice(1).forEach(b => {
+        const angle = t * b.speed;
+        const a = b.orbit, bv = a * (1 - (b.ecc || 0) * 0.5);
+        const x = cx + a * Math.cos(angle);
+        const y = cy + bv * Math.sin(angle);
+
+        // Glow
+        const g = ctx.createRadialGradient(x, y, 0, x, y, b.glow);
+        g.addColorStop(0, b.color + '60');
+        g.addColorStop(1, b.color + '00');
+        ctx.fillStyle = g;
+        ctx.beginPath();
+        ctx.arc(x, y, b.glow, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.beginPath();
+        ctx.arc(x, y, b.r, 0, Math.PI * 2);
+        ctx.fillStyle = b.color;
+        ctx.fill();
+      });
+
+      // Eccentricity label
+      ctx.fillStyle = 'rgba(200,98,42,0.7)';
+      ctx.font = `${Math.round(10 * devicePixelRatio) / devicePixelRatio}px "Space Mono", monospace`;
+      ctx.fillText(`Earth orbital eccentricity: ${earthEcc.toFixed(3)}`, W * 0.62, H * 0.15);
+      ctx.fillStyle = 'rgba(138,122,106,0.5)';
+      ctx.font = `${Math.round(9 * devicePixelRatio) / devicePixelRatio}px "Space Mono", monospace`;
+      ctx.fillText('(modulated by Jupiter · ~100,000 yr cycle)', W * 0.62, H * 0.25);
+
+      t++;
+      requestAnimationFrame(draw);
+    }
+
+    draw();
+  }
+</script>
+</body>
+</html>
