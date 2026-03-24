@@ -4,7 +4,7 @@
 
 # The Fire Beneath the Equations
 
-*by Isaac Asimov [in the tradition of]*
+*by Isaac*
 
 ---
 
